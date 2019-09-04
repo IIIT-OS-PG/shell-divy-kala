@@ -384,7 +384,7 @@ void run_pipes (char ** rargs, int tokcount, int pipes)
         if ( f != 0)
         {
             child_pids.push_back(f);
-          //  cout << "process pushed : " << f << endl;
+            //  cout << "process pushed : " << f << endl;
         }
         if(f==0)
         {
@@ -438,7 +438,7 @@ void run_pipes (char ** rargs, int tokcount, int pipes)
 
     for(auto i = child_pids.begin(); i != child_pids.end(); i++)
     {
-      //  cout << "waitig for " << *i <<endl;
+        //  cout << "waitig for " << *i <<endl;
 //        if(i==child_pids.back) {
 //            kill(*i, 0);
 //        }
@@ -462,8 +462,12 @@ int main()
     ps1 = "$";
     home = getenv("HOME");
     string input = "";
+
+    map<string,string> alias;
+
     while(input != "exit")
     {
+
 
 
 
@@ -479,10 +483,13 @@ int main()
             for(int i = 0; i < tokcount; i++)
             {
                 rargs[i] = tokens[i];
+
                 // cout << trueargs[i] << endl;
             }
             //TODO DELETE ALL after num_tokens FROM ARGS AFTER COPY
             rargs[tokcount] = NULL;
+
+
 
             int rediri = 0;
             int pipes = 0;
@@ -513,6 +520,48 @@ int main()
 
             if(input == "exit")
                 return 0;
+
+
+            if(strcmp(rargs[0], "alias") ==0)
+            {
+                string tmp(rargs[1]);
+                string tmp2 (rargs[3] );
+                alias[tmp] = tmp2;
+            }
+
+
+            string firsttoken(rargs[0]);
+            auto k = alias.find(firsttoken);
+            if( k != alias.end() )
+            {
+                string aliasval = k->second;
+                char * aliastok [MAXARGS];
+                int aliascount = tokenize_string(aliasval, aliastok);
+                int alargcount = tokcount + aliascount;
+                char * alargs[alargcount];
+                int i;
+                for( i = 0; i < aliascount; i++)
+                {
+                    alargs[i] = aliastok[i];
+
+                    // cout << trueargs[i] << endl;
+                }
+
+                for(int j = 1; j < tokcount - 1; j++)
+                {
+                    alargs[i++] = rargs[j];
+
+                    // cout << trueargs[i] << endl;
+                }
+                //TODO DELETE ALL after num_tokens FROM ARGS AFTER COPY
+                alargs[alargcount-1] = NULL;
+                run_command(alargs,alargcount);
+
+            }
+
+
+
+
             else if (strcmp(rargs[0],"cd") == 0)
             {
                 if(tokcount == 1 || strcmp("~", rargs[1]) == 0)
