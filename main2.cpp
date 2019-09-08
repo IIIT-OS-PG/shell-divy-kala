@@ -6,7 +6,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <stdio.h>
-#include <sys/ioctl.h>
+
 #define MAXARGS 400
 #define MAX_ARG_LENGTH 100
 
@@ -14,10 +14,6 @@ using namespace std;
 
 string cwd, ps1, user_name, home;
 string path; //NOTE THAT PATH IS EXPECTED TO END WITH /
-
-int scriptfile;
-bool record = false;
-
 
 void prompt()
 {
@@ -28,13 +24,6 @@ void prompt()
 //    cwd = getcwd(buff,4096);
     //cout << endl;
     cout  << ps1 << flush;
-    if(record)
-    {
-        int buffsiz = ps1.size();
-        char buff[buffsiz];
-        strcpy(buff,ps1.c_str());
-        write(scriptfile,buff,buffsiz);
-    }
 
 }
 
@@ -228,7 +217,7 @@ void run_redirect ( char ** rargs, int tokcount)
     if(ret == -1)
     {
         cout << "Process fork failed." << endl;
-
+        \
 
     }
     else if ( ret == 0 )
@@ -304,9 +293,7 @@ void run_command(char ** trueargs, int tokcount)
 {
     if(tokcount == 0)
         return;
-    int pip[2];
-    pipe(pip);
-    //fcntl(pip[0],F_SETFL,O_NONBLOCK);
+
     int ret = fork();
 
     if (ret == -1)
@@ -314,83 +301,44 @@ void run_command(char ** trueargs, int tokcount)
 
         cout << "Command failed to execute, the process could not be started\n";
     }
-
-
     else if(ret == 0)
     {
 
-        if(record)
-        {
-
-            string fullcom = path + trueargs[0];
-            dup2(pip[1],1);
-            close(pip[1]);
-            close(pip[0]);
-
-            execv(fullcom.c_str(), trueargs);
-
-        }
-        else
-        {
-            string fullcom = path + trueargs[0];
-            close(pip[1]);
-            close(pip[0]);
-            execv(fullcom.c_str(), trueargs);
-        }
-
-
-    }
 
 
 
-    if(record)
-    {
-        close(pip[1]);
-        int k = fork();
-        if(k==0)
-        {
+//        int num_tokens = tokenize_string(com, args);
 
-            //  signal(SIGPIPE, SIG_IGN);
-            char c[100];
-            int count;
 
-//        FILE * infile = fdopen(pip[0],"r");
-//        ifstream ifsfile;
-//        ifsfile.open
-            int con;
+        // cout << "command "  << fullcom <<  endl << "0 arg "<< args[0] << endl << "1 arg "  << args[1]  << endl;
+        //    if( args[2] == NULL) cout << "NULL" ;
+        //    cout << "args1 read" << endl;
+//        char * trueargs[num_tokens+1]; // TRUE ARGS MUST BE NULL TERMINATED ARRAY
+//        for(int i = 0; i < num_tokens; i++) {
+//            trueargs[i] = args[i];
+//           // cout << trueargs[i] << endl;
+//        }
+        //TODO DELETE ALL after num_tokens FROM ARGS AFTER COPY
+//        trueargs[num_tokens] = NULL;
+//
 
-            //   while (ioctl(pip[0], FIONREAD, &con) == 0 && con > 0)
-            while ( (count = read(pip[0], c,100) ) > 0 )
-            {
-                //count = read(pip[0], c,1000) ;
-                write(scriptfile, c, count);
-                //   scriptfile.write(buff.c_str(), buff.size());
-                write(1,c,count);//    cout.write(buff.c_str(), buff.size());
-                //     cout << "count is " << count << endl;
-                //  count = write(scriptfile,buff.c_str(),count);
 
-            }
-            close(pip[0]);
-            _exit(0);
+        string fullcom = path + trueargs[0];
 
-        }
-        close(pip[0]);
-         waitpid(ret,NULL,0);
-        waitpid(k,NULL,0);
-        //    cout << "k term";
+        execv(fullcom.c_str(), trueargs);
+        //      cout << "error" << errno << endl << fullcom << endl;
+
+        //    cout << "execed";
+
+
+
 
     }
     else
     {
-            close(pip[1]);
-    close(pip[0]);
-        waitpid(ret,NULL,0);
-        //  cout << "ret term";
-    }
 
-    close(pip[1]);
-    close(pip[0]);
-//   waitpid(ret,NULL,0);
+        wait(NULL);
+    }
 
 }
 
@@ -512,7 +460,6 @@ void run_pipes (char ** rargs, int tokcount, int pipes)
 
 }
 
-
 int main()
 {
     path = "/bin/";
@@ -524,6 +471,16 @@ int main()
 
 
 
+    bool record = false;
+    char *  rec = getenv("record");
+    if(rec == NULL)
+    {
+        record = false;
+    }
+    else
+    {
+        record = true;
+    }
 
 
 
@@ -546,14 +503,17 @@ int main()
 
 
 
-
-        prompt();
+        if(record)
+        {
+            char buff[16];
+            strcpy(buff,ps1.c_str());
+            write(3,buff,16);
+        }
+        else
+            prompt();
 
         getline(cin, input);
 
-
-        if(strcmp(input.c_str(), "exit")==0)
-            return 0;
 
 
 
@@ -601,91 +561,44 @@ int main()
 
 
 
+            if(input == "exit")
+                return 0;
+
 
 
             int sh;
-            if(record)
-            {
 
-                char inp[input.size()+1];
-                strcpy(inp,input.c_str());
-                inp[input.size()] = '\n';
-                write(scriptfile,inp,input.size()+1);
-            }
 
             if( strcmp(rargs[0], "record") == 0)
             {
 
-
                 if ( tokcount == 2 &&  strcmp(rargs[1], "start") == 0 )
                 {
+                    setenv("record", "true", 1);
 
+                    int mypip[2], pipe3[2];
+                    pipe(mypip);
+                    pipe(pipe3);
 
-
-                    cout << "you are under surveillance" << endl;
-
-
-
-                    scriptfile = open("/home/divy/Documents/OS/1/Shell/bin/Debug/scriptfile.txt", O_CREAT | O_WRONLY | O_TRUNC,S_IRWXU);
-                    if(scriptfile == -1)
-                        cout << "unable to open scriptfile, make sure you have appropriate permissions" << endl;
-                    record = true;
-                    continue;
-
-
-
-                }
-                else if (  tokcount == 2 && strcmp(rargs[1], "stop") == 0)
-                {
-                    if(record)
+                    sh = fork();
+                    if(sh == 0)
                     {
 
+                        dup2(mypip[1], 1);
+                        dup2(pipe3[1],3);
+                        close(mypip[0]);
+                        close(mypip[1]);
+                        close(pipe3[0]);
+                        close(pipe3[1]);
 
-                        close(scriptfile);
-                        record = false;
-                        cout << "recording stopped" << endl;
-                        continue;
+                        string shellpath = "/home/divy/Documents/OS/1/Shell/bin/Debug/Shell";     //TODO MAY NEED TO RUN PWD TO GET THIS PATH just when prog runs
+
+                        char * args[2] {"Shell",NULL};
+                        execv(shellpath.c_str(),args);
+                        cout << "couldn't run shell";
 
 
                     }
-                    else
-                    {
-                        cout << "not recording" << endl;
-
-                    }
-
-                }
-
-
-
-            }
-            /*
-                                setenv("record", "true", 1);
-
-                                int mypip[2], pipe3[2];
-                                pipe(mypip);
-                                pipe(pipe3);
-
-                                sh = fork();
-                                if(sh == 0)
-                                {
-
-                                    dup2(mypip[1], 1);
-                                    dup2(pipe3[1],3);
-                                    close(mypip[0]);
-                                    close(mypip[1]);
-                                    close(pipe3[0]);
-                                    close(pipe3[1]);
-
-                                    string shellpath = "/home/divy/Documents/OS/1/Shell/bin/Debug/Shell";     //TODO MAY NEED TO RUN PWD TO GET THIS PATH just when prog runs
-
-                                    char * args[2] {"Shell",NULL};
-                                    execv(shellpath.c_str(),args);
-                                    cout << "couldn't run shell";
-
-
-                                }
-                                */
 //                    int out = fork();
 //                    if(out == 0) {
 //                        dup2(mypip[0], 0);
@@ -721,49 +634,49 @@ int main()
 //
 //                    }
 // reading pipe through stdin
-            //  int savedin = dup(0);
-            // dup2(mypip[0],0);
-            //TODO
-//
-//                    int status,cnt ;
-//                    char c[5];
-//                    //  FILE * cmdfile = fdopen(0,"r");
-//                    while(status = waitpid(sh,NULL,WNOHANG ) == 0)
-//                    {
-//
-//                        //     string buff;
-//                        //   getline(cin, buff);         //only total 44 read
-//                        //       while (( c = getc(cmdfile))!= EOF)
-//                        while ( read(mypip[0], &c,1) !=0 )
-//                        {
-//                            //buff = buff + "\n";
-//                            //   scriptfile << c;
-//                            // putc(c,scriptfile);
-//                            //       putc(c, script);
-//                            read(mypip[0], &c, 1);
-//                            write(scriptfile, &c, 1);
-//
-//                            //   cout.put(c);
-//                            putchar(c[0]);
-//                            //  scriptfile.write(buff.c_str(), buff.size());
-//                            //    cout << c;
-//                            //  cout.write(buff.c_str(), buff.size());
-//
-//                            //            count = write(scriptfile,buff.c_str(),count);
-//                        }
-//
-//
+                    //  int savedin = dup(0);
+                    // dup2(mypip[0],0);
+                    int scriptfile = open("/home/divy/Documents/OS/1/Shell/bin/Debug/scriptfile", O_CREAT | O_WRONLY | O_TRUNC,777); //TODO
+
+                    int status,cnt ;
+                    char c[5];
+                    //  FILE * cmdfile = fdopen(0,"r");
+                    while(status = waitpid(sh,NULL,WNOHANG ) == 0)
+                    {
+
+                        //     string buff;
+                        //   getline(cin, buff);         //only total 44 read
+                        //       while (( c = getc(cmdfile))!= EOF)
+                        while ( read(mypip[0], &c,1) !=0 )
+                        {
+                            //buff = buff + "\n";
+                            //   scriptfile << c;
+                            // putc(c,scriptfile);
+                            //       putc(c, script);
+                            read(mypip[0], &c, 1);
+                            write(scriptfile, &c, 1);
+
+                        //   cout.put(c);
+                        putchar(c[0]);
+                        //  scriptfile.write(buff.c_str(), buff.size());
+                        //    cout << c;
+                        //  cout.write(buff.c_str(), buff.size());
+
+                        //            count = write(scriptfile,buff.c_str(),count);
+                    }
+
+
 
 
 //                        scriptfile << buff;
 //                        cout << buff;
-//                        char cmd [1000];
-//                        read(pipe3[0],cmd, 1000);
-//                        //  scriptfile << cmd;
-//                        cout << endl << cmd << " written to file";
-//                        write(scriptfile, cmd, 1000);
-//                        //       (stdin,buff);
-            //  scanf("%[^\n]s ",&buff);
+                    char cmd [1000];
+                    read(pipe3[0],cmd, 1000);
+                    //  scriptfile << cmd;
+                    cout << endl << cmd << " written to file";
+                    write(scriptfile, cmd, 1000);
+                    //       (stdin,buff);
+                    //  scanf("%[^\n]s ",&buff);
 
 //                        while ((c = getc(cmdfile))!= EOF)
 //                        {
@@ -784,125 +697,146 @@ int main()
 
 
 
-
-
-            //    scriptfile << flush;
-
-//                    close(mypip[0]);
-//                    close(mypip[1]);
-//                    close(pipe3[0]);
-//                    close(pipe3[1]);
-//
-//                    //     dup2(savedin, 0);
-//                    unsetenv("record");
-//                    record = false;
-//                    continue;
-
-            //     }
-
-
-
-
-
-
-            if(strcmp(rargs[0], "alias") ==0)
-            {
-                string tmp(rargs[1]);
-                string tmp2 (rargs[3] );
-                alias[tmp] = tmp2;
-            }
-
-
-            string firsttoken(rargs[0]);
-            auto k = alias.find(firsttoken);
-            if( k != alias.end() )
-            {
-                string aliasval = k->second;
-                char * aliastok [MAXARGS];
-                int aliascount = tokenize_string(aliasval, aliastok);
-                int alargcount = tokcount + aliascount;
-                char * alargs[alargcount];
-                int i;
-                for( i = 0; i < aliascount; i++)
-                {
-                    alargs[i] = aliastok[i];
-
-                    // cout << trueargs[i] << endl;
                 }
 
-                for(int j = 1; j < tokcount - 1; j++)
-                {
-                    alargs[i++] = rargs[j];
+                //    scriptfile << flush;
+                cout << flush;
+                //  scriptfile.close();
 
-                    // cout << trueargs[i] << endl;
-                }
-                //TODO DELETE ALL after num_tokens FROM ARGS AFTER COPY
-                alargs[alargcount-1] = NULL;
-                run_command(alargs,alargcount);
+                close(mypip[0]);
+                close(mypip[1]);
+                close(pipe3[0]);
+                close(pipe3[1]);
+
+                //     dup2(savedin, 0);
+                unsetenv("record");
+                record = false;
+                continue;
 
             }
-
-
-
-
-            else if (strcmp(rargs[0],"cd") == 0)
+            else if (  tokcount == 2 && strcmp(rargs[1], "stop") == 0)
             {
-                if(tokcount == 1 || strcmp("~", rargs[1]) == 0)
+                if(record)
                 {
-                    //no second argument
-                    chdir( home.c_str());
+                    cout << "recording stopped" << endl;
+                    close(0);
+                    close(1);
+                    close(2);
+                    close(3);
+                    exit(0);
+
                 }
                 else
                 {
-                    chdir(  rargs[1]);
+                    cout << "not recording" << endl;
 
                 }
 
             }
-            else if (dredir == 1 )
-            {
-                run_double_redirect(rargs,tokcount);
-            }
-            else if (rediri==1)
-            {
 
-                run_redirect(rargs, tokcount);
-            }
-            else if (pipes > 0)
-            {
-                run_pipes(rargs,tokcount,pipes);
-
-            }
-            else if (rediri >1)
-            {
-                cout << endl << "Syntax error" << endl;
-            }
-
-
-            else
-            {
-
-                run_command(rargs, tokcount);
-            }
-
-
-
-
-
-
-
-
-
-
-
-            for(int i = tokcount ; i >= 0; i-- )
-            {
-                delete[] rargs[i];
-            }
-            //no need to delete trueargs or args as they are not allocated using new
 
         }
-    }
 
-    return 0;
+
+
+        if(strcmp(rargs[0], "alias") ==0)
+        {
+            string tmp(rargs[1]);
+            string tmp2 (rargs[3] );
+            alias[tmp] = tmp2;
+        }
+
+
+        string firsttoken(rargs[0]);
+        auto k = alias.find(firsttoken);
+        if( k != alias.end() )
+        {
+            string aliasval = k->second;
+            char * aliastok [MAXARGS];
+            int aliascount = tokenize_string(aliasval, aliastok);
+            int alargcount = tokcount + aliascount;
+            char * alargs[alargcount];
+            int i;
+            for( i = 0; i < aliascount; i++)
+            {
+                alargs[i] = aliastok[i];
+
+                // cout << trueargs[i] << endl;
+            }
+
+            for(int j = 1; j < tokcount - 1; j++)
+            {
+                alargs[i++] = rargs[j];
+
+                // cout << trueargs[i] << endl;
+            }
+            //TODO DELETE ALL after num_tokens FROM ARGS AFTER COPY
+            alargs[alargcount-1] = NULL;
+            run_command(alargs,alargcount);
+
+        }
+
+
+
+
+        else if (strcmp(rargs[0],"cd") == 0)
+        {
+            if(tokcount == 1 || strcmp("~", rargs[1]) == 0)
+            {
+                //no second argument
+                chdir( home.c_str());
+            }
+            else
+            {
+                chdir(  rargs[1]);
+
+            }
+
+        }
+        else if (dredir == 1 )
+        {
+            run_double_redirect(rargs,tokcount);
+        }
+        else if (rediri==1)
+        {
+
+            run_redirect(rargs, tokcount);
+        }
+        else if (pipes > 0)
+        {
+            run_pipes(rargs,tokcount,pipes);
+
+        }
+        else if (rediri >1)
+        {
+            cout << endl << "Syntax error" << endl;
+        }
+
+
+        else
+        {
+
+            run_command(rargs, tokcount);
+        }
+
+
+
+
+
+
+
+
+
+
+
+        for(int i = tokcount ; i >= 0; i-- )
+        {
+            delete[] rargs[i];
+        }
+        //no need to delete trueargs or args as they are not allocated using new
+
+    }
+}
+
+return 0;
 }
