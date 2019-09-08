@@ -19,9 +19,11 @@ using namespace std;
 
 string cwd, ps1, user_name, home, host_name;
 string path; //NOTE THAT PATH IS EXPECTED TO END WITH /
-
+map<string,pair<string,bool>> vars;
 int scriptfile;
 bool record = false;
+
+
 
 
 
@@ -34,6 +36,7 @@ int main(int argc, char *argv[], char *envp[])
     string input = "";
 
     map<string,string> alias;
+
 
 
 
@@ -71,6 +74,7 @@ int main(int argc, char *argv[], char *envp[])
             int rediri = 0;
             int pipes = 0;
             int dredir =0;
+            int equals = 0;
             for(int i = 0; i < tokcount; i++)
             {
                 if(strcmp(rargs[i], ">") == 0)
@@ -83,9 +87,36 @@ int main(int argc, char *argv[], char *envp[])
                     dredir++;
 
                 }
-                if(strcmp(rargs[i], "|") == 0)
+                else if(strcmp(rargs[i], "|") == 0)
                 {
                     pipes++;
+
+                }
+                else if(strcmp(rargs[i], "=") == 0)
+                {
+                    equals++;
+
+                }
+                else if (strcmp(rargs[i], "~") == 0) {
+                    char * temp = new char [home.size()];
+                    strcpy(temp, home.c_str());
+                    delete rargs[i];
+                    rargs[i] = temp;
+                }
+                else if( rargs[i][0] == '$' ) {
+                    int len = strlen(rargs[i]) ;
+                    char temp[len];
+                    strcpy(temp, rargs[i]+1);
+                    string cmd(temp);
+                    auto j =  vars.find(cmd) ;
+                    if( j != vars.end()) {
+                        char * to = new char [ j->second.first.size() ];
+                        const char * val = j->second.first.c_str();
+                        strcpy(to, val  );
+                        delete rargs[i];
+                        rargs[i] = to;
+                    }
+
 
                 }
             }
@@ -188,6 +219,7 @@ int main(int argc, char *argv[], char *envp[])
 
 
 
+
             else if (strcmp(rargs[0],"cd") == 0)
             {
                 if(tokcount == 1 || strcmp("~", rargs[1]) == 0)
@@ -227,11 +259,45 @@ int main(int argc, char *argv[], char *envp[])
                 run_pipes(rargs,tokcount,pipes);
 
             }
-            else if (rediri >1)
+            else if (rediri >1 || dredir > 1)
             {
-                cout << endl << "Syntax error" << endl;
+                cout << endl << "Syntax error multiple redirection not allowed" << endl;
+            }
+            else if (strcmp(rargs[0],"export") == 0)
+            {
+                vars[rargs[1]].second = true;
+                char tmp [ vars[rargs[1]].first.size() ];
+                strcpy( tmp, vars[rargs[1]].first.c_str());
+                export_var(rargs[1], tmp );
             }
 
+
+            else if (equals ==1 && strcmp(rargs[1], "=") == 0)
+            {
+
+                bool exists = vars.find(rargs[0]) != vars.end();
+                if(!exists)
+                {
+                    vars[rargs[0]] = make_pair(rargs[2], false);
+                }
+                else
+                {
+                    bool exported = vars[rargs[0]].second;
+
+                    if(exported)
+                    {
+                        export_var(rargs[0], rargs[2]);
+                        vars[rargs[0]] = make_pair(rargs[2], true);
+
+
+                    }
+                    else
+                    {
+                        vars[rargs[0]] = make_pair(rargs[2], false);
+                    }
+
+                }
+            }
 
             else
             {
