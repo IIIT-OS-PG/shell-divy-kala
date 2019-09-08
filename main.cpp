@@ -626,7 +626,7 @@ int main()
 
 
 
-                    scriptfile = open("/home/divy/Documents/OS/1/Shell/bin/Debug/scriptfile.txt", O_CREAT | O_WRONLY | O_TRUNC,S_IRWXU);
+                    scriptfile = open("scriptfile.txt", O_CREAT | O_WRONLY | O_TRUNC,S_IRWXU);
                     if(scriptfile == -1)
                         cout << "unable to open scriptfile, make sure you have appropriate permissions" << endl;
                     record = true;
