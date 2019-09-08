@@ -1,6 +1,13 @@
 #ifndef UTILITY_FUNCTIONS_H_INCLUDED
 #define UTILITY_FUNCTIONS_H_INCLUDED
 
+#define MAXARGS 400
+#define MAX_ARG_LENGTH 100
+
+using namespace std;
+extern string cwd, ps1, user_name, home, path;
+extern int scriptfile;
+extern bool record;
 void prompt()
 {
 

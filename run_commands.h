@@ -11,6 +11,7 @@ extern string cwd, ps1, user_name, home, path;
 extern int scriptfile;
 extern bool record;
 
+
 void run_redirect ( char ** rargs, int tokcount)
 {
     if(tokcount == 0)
@@ -46,7 +47,8 @@ void run_redirect ( char ** rargs, int tokcount)
         dup2(fd,1);
         close(fd);
         string fullcom = path + rargs[0];
-        execv( fullcom.c_str(), edargs);
+   //     execv( fullcom.c_str(), edargs);
+        execvpe(rargs[0],edargs,environ);
 
 
     }
@@ -93,7 +95,8 @@ void run_double_redirect ( char ** rargs, int tokcount)
         dup2(fd,1);
         close(fd);
         string fullcom = path + rargs[0];
-        execv( fullcom.c_str(), edargs);
+    //    execv( fullcom.c_str(), edargs);
+        execvpe(rargs[0],edargs,environ);
 
 
     }
@@ -133,8 +136,8 @@ void run_command(char ** trueargs, int tokcount)
             dup2(pip[1],1);
             close(pip[1]);
             close(pip[0]);
-
-            execv(fullcom.c_str(), trueargs);
+            execvpe(trueargs[0],trueargs,environ);
+         //   execv(fullcom.c_str(), trueargs);
 
         }
         else
@@ -142,7 +145,8 @@ void run_command(char ** trueargs, int tokcount)
             string fullcom = path + trueargs[0];
             close(pip[1]);
             close(pip[0]);
-            execv(fullcom.c_str(), trueargs);
+          //  execv(fullcom.c_str(), trueargs);
+            execvpe(trueargs[0],trueargs,environ);
         }
 
 
@@ -299,7 +303,8 @@ void run_pipes (char ** rargs, int tokcount, int pipes)
 
             string fullcom = path + cmds[i][0];
 
-            if( execv(fullcom.c_str(), cmds[i]) == -1)
+            //if( execv(fullcom.c_str(), cmds[i]) == -1)
+            if(execvpe(cmds[i][0],cmds[i],environ) == -1)
             {
                 cout << "\ncommand could not be executed\n";
                 exit(-1);
@@ -458,7 +463,8 @@ void redirect_from_pipe (char ** rargs, int tokcount, int pipes)
 
             string fullcom = path + cmds[i][0];
 
-            if( execv(fullcom.c_str(), cmds[i]) == -1)
+//            if( execv(fullcom.c_str(), cmds[i]) == -1)
+            if(execvpe(cmds[i][0], cmds[i],environ) == -1)
             {
                 cout << "\ncommand could not be executed\n";
                 exit(-1);
@@ -583,7 +589,8 @@ void dredirect_from_pipe (char ** rargs, int tokcount, int pipes)
             close(writefile);
             string fullcom = path + cmds[i][0];
 
-            if( execv(fullcom.c_str(), cmds[i]) == -1)
+       //     if( execv(fullcom.c_str(), cmds[i]) == -1)
+            if(execvpe(cmds[i][0],cmds[i],environ) == -1)
             {
                 cout << "\ncommand could not be executed\n";
                 exit(-1);
