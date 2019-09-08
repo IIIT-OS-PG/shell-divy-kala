@@ -11,7 +11,7 @@ extern string path;
 
 extern int scriptfile;
 extern bool record;
-
+extern int dolques;
 
 void run_redirect ( char ** rargs, int tokcount)
 {
@@ -44,18 +44,29 @@ void run_redirect ( char ** rargs, int tokcount)
     {
 
 
-        int fd = open(rargs[tokcount-1], O_WRONLY | O_TRUNC);
+        int fd = open(rargs[tokcount-1], O_WRONLY | O_TRUNC, S_IRWXU);
         dup2(fd,1);
         close(fd);
         string fullcom = path + rargs[0];
-   //     execv( fullcom.c_str(), edargs);
+        //     execv( fullcom.c_str(), edargs);
         execvpe(rargs[0],edargs,environ);
+
 
 
     }
     else
     {
-        wait(NULL);
+        int * status;
+        waitpid(ret, status, 0);
+         if(*status != 0) {
+
+            dolques = WEXITSTATUS(*status);
+        }
+        else {
+            dolques = 0;
+        }
+
+
 
 
     }
@@ -96,14 +107,22 @@ void run_double_redirect ( char ** rargs, int tokcount)
         dup2(fd,1);
         close(fd);
         string fullcom = path + rargs[0];
-    //    execv( fullcom.c_str(), edargs);
+        //    execv( fullcom.c_str(), edargs);
         execvpe(rargs[0],edargs,environ);
 
 
     }
     else
     {
-        wait(NULL);
+        int * status;
+        waitpid(ret, status, 0);
+         if(*status != 0) {
+
+            dolques = WEXITSTATUS(*status);
+        }
+        else {
+            dolques = 0;
+        }
 
 
     }
@@ -137,8 +156,8 @@ void run_command(char ** trueargs, int tokcount)
             dup2(pip[1],1);
             close(pip[1]);
             close(pip[0]);
-            execvpe(trueargs[0],trueargs,environ);
-         //   execv(fullcom.c_str(), trueargs);
+          //  execvpe(trueargs[0],trueargs,environ);
+            //   execv(fullcom.c_str(), trueargs);
 
         }
         else
@@ -146,11 +165,11 @@ void run_command(char ** trueargs, int tokcount)
             string fullcom = path + trueargs[0];
             close(pip[1]);
             close(pip[0]);
-          //  execv(fullcom.c_str(), trueargs);
-            execvpe(trueargs[0],trueargs,environ);
+            //  execv(fullcom.c_str(), trueargs);
+           // execvpe(trueargs[0],trueargs,environ);
         }
 
-
+         execvpe(trueargs[0],trueargs,environ);
     }
 
 
@@ -196,7 +215,17 @@ void run_command(char ** trueargs, int tokcount)
     {
         close(pip[1]);
         close(pip[0]);
-        waitpid(ret,NULL,0);
+        int * status;
+        waitpid(ret,status,0);
+
+        if(*status != 0) {
+
+            dolques = WEXITSTATUS(*status);
+        }
+        else {
+            dolques = 0;
+        }
+
         //  cout << "ret term";
     }
 
@@ -359,7 +388,17 @@ void run_pipes (char ** rargs, int tokcount, int pipes)
 //        if(i==child_pids.back) {
 //            kill(*i, 0);
 //        }
-        waitpid(*i,NULL,0);
+        int * status;
+
+        waitpid(*i,status,0);
+           if(*status != 0) {
+
+            dolques = WEXITSTATUS(*status);
+        }
+        else {
+            dolques = 0;
+        }
+
     }
 
 
@@ -486,7 +525,16 @@ void redirect_from_pipe (char ** rargs, int tokcount, int pipes)
 //        if(i==child_pids.back) {
 //            kill(*i, 0);
 //        }
-        waitpid(*i,NULL,0);
+        int * status;
+        waitpid(*i,status,0);
+           if(*status != 0) {
+
+            dolques = WEXITSTATUS(*status);
+        }
+        else {
+            dolques = 0;
+        }
+
     }
 
 
@@ -590,7 +638,7 @@ void dredirect_from_pipe (char ** rargs, int tokcount, int pipes)
             close(writefile);
             string fullcom = path + cmds[i][0];
 
-       //     if( execv(fullcom.c_str(), cmds[i]) == -1)
+            //     if( execv(fullcom.c_str(), cmds[i]) == -1)
             if(execvpe(cmds[i][0],cmds[i],environ) == -1)
             {
                 cout << "\ncommand could not be executed\n";
@@ -612,7 +660,16 @@ void dredirect_from_pipe (char ** rargs, int tokcount, int pipes)
 //        if(i==child_pids.back) {
 //            kill(*i, 0);
 //        }
-        waitpid(*i,NULL,0);
+        int * status;
+        waitpid(*i,status,0);
+           if(*status != 0) {
+
+            dolques = WEXITSTATUS(*status);
+        }
+        else {
+            dolques = 0;
+        }
+
     }
 
 

@@ -11,6 +11,7 @@
 #include "utility_functions.h"
 #include "run_commands.h"
 #include "setup_env.h"
+#include <stdlib.h>
 #define MAXARGS 400
 #define MAX_ARG_LENGTH 100
 
@@ -21,6 +22,7 @@ string cwd, ps1, user_name, home, host_name;
 string path; //NOTE THAT PATH IS EXPECTED TO END WITH /
 map<string,pair<string,bool>> vars;
 int scriptfile;
+int dolques;
 bool record = false;
 
 
@@ -49,13 +51,17 @@ int main(int argc, char *argv[], char *envp[])
         getline(cin, input);
 
 
-        if(strcmp(input.c_str(), "exit")==0)
-            return 0;
+
 
 
 
         char * tokens[MAXARGS];
         int tokcount = tokenize_string(input, tokens);
+
+        if(strcmp(input.c_str(), "exit")==0 && tokcount == 1)
+            return 0;
+
+
         if(tokcount > 0)
         {
             char * rargs[tokcount+1];
@@ -97,19 +103,45 @@ int main(int argc, char *argv[], char *envp[])
                     equals++;
 
                 }
-                else if (strcmp(rargs[i], "~") == 0) {
+                else if (strcmp(rargs[i], "~") == 0)
+                {
                     char * temp = new char [home.size()];
                     strcpy(temp, home.c_str());
                     delete rargs[i];
                     rargs[i] = temp;
                 }
-                else if( rargs[i][0] == '$' ) {
+                else if (strcmp(rargs[i], "$$") == 0)
+                {
+
+                    int pid = getpid();
+                    string x = to_string(pid);
+                    char * temp = new char [x.size()];
+                    strcpy(temp, x.c_str());
+                    delete rargs[i];
+                    rargs[i] = temp;
+
+                }
+                else if (strcmp(rargs[i], "$?") == 0)
+                {
+
+                    int pid = dolques;
+                    string x = to_string(pid);
+                    char * temp = new char [x.size()];
+                    strcpy(temp, x.c_str());
+                    delete rargs[i];
+                    rargs[i] = temp;
+
+                }
+
+                else if( rargs[i][0] == '$' )
+                {
                     int len = strlen(rargs[i]) ;
                     char temp[len];
                     strcpy(temp, rargs[i]+1);
                     string cmd(temp);
                     auto j =  vars.find(cmd) ;
-                    if( j != vars.end()) {
+                    if( j != vars.end())
+                    {
                         char * to = new char [ j->second.first.size() ];
                         const char * val = j->second.first.c_str();
                         strcpy(to, val  );
