@@ -6,7 +6,8 @@
 
 
 using namespace std;
-extern string cwd, ps1, user_name, home, path;
+extern string cwd, ps1, user_name, home, host_name;
+extern string path;
 
 extern int scriptfile;
 extern bool record;
