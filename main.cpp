@@ -26,11 +26,6 @@ int dolques;
 bool record = false;
 
 
-
-
-
-
-
 int main(int argc, char *argv[], char *envp[])
 {
     setup_environ();
