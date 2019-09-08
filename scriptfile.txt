@@ -1,0 +1,11 @@
+$ls -l | grep Shell
+-rwx------ 1 divy divy     0 Sep  8 15:43 Shell
+-rw-rw-r-- 1 divy divy   805 Sep  8 13:01 Shell.cbp
+-rw-rw-r-- 1 divy divy   206 Sep  8 15:44 Shell.depend
+-rw-rw-r-- 1 divy divy   464 Sep  8 13:01 Shell.layout
+$echo hahahahahha
+hahahahahha
+$ls -l | grep divy | grep Shell | grep 13
+-rw-rw-r-- 1 divy divy   805 Sep  8 13:01 Shell.cbp
+-rw-rw-r-- 1 divy divy   464 Sep  8 13:01 Shell.layout
+$
