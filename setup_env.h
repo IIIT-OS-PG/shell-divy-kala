@@ -12,7 +12,7 @@ void export_var (char*, char* );
 void setup_environ ()
 {
 
-
+ //   environ = NULL;
     struct passwd * thispwd = getpwuid(getuid());
     string  ttt (thispwd->pw_dir);
     home = ttt;

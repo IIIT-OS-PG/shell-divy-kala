@@ -251,6 +251,28 @@ int main(int argc, char *argv[], char *envp[])
                 }
 
             }
+            else if (strcmp(rargs[0],"open") == 0)
+            {
+                string name (rargs[1]);
+                string revname = name;
+                reverse(revname.begin(), revname.end());
+
+                stringstream ss (revname);
+                string r_ext;
+
+                getline (ss, r_ext, '.');
+                reverse(r_ext.begin(), r_ext.end());
+                string ext = "." + r_ext;
+
+                string sprog = filemapping[ext];
+                char * prog  = new char [sprog.size()];
+                strcpy (prog, sprog.c_str());
+                delete rargs[0];
+                rargs[0] = prog;
+                run_command_bg(rargs, tokcount);
+
+
+            }
             else if (rediri ==1 && pipes > 0)
             {
                 redirect_from_pipe(rargs,tokcount,pipes);

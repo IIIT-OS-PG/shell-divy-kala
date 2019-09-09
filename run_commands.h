@@ -235,6 +235,101 @@ void run_command(char ** trueargs, int tokcount)
 
 }
 
+void run_command_bg(char ** trueargs, int tokcount)
+{
+    if(tokcount == 0)
+        return;
+    int pip[2];
+    pipe(pip);
+    //fcntl(pip[0],F_SETFL,O_NONBLOCK);
+    int ret = fork();
+
+    if (ret == -1)
+    {
+
+        cout << "Command failed to execute, the process could not be started\n";
+    }
+
+
+    else if(ret == 0)
+    {
+
+        if(record)
+        {
+
+            string fullcom = path + trueargs[0];
+            dup2(pip[1],1);
+            close(pip[1]);
+            close(pip[0]);
+          //  execvpe(trueargs[0],trueargs,environ);
+            //   execv(fullcom.c_str(), trueargs);
+
+        }
+        else
+        {
+            string fullcom = path + trueargs[0];
+            close(pip[1]);
+            close(pip[0]);
+            //  execv(fullcom.c_str(), trueargs);
+           // execvpe(trueargs[0],trueargs,environ);
+        }
+
+         execvpe(trueargs[0],trueargs,environ);
+    }
+
+
+
+    if(record)
+    {
+        close(pip[1]);
+        int k = fork();
+        if(k==0)
+        {
+
+            //  signal(SIGPIPE, SIG_IGN);
+            char c[100];
+            int count;
+
+//        FILE * infile = fdopen(pip[0],"r");
+//        ifstream ifsfile;
+//        ifsfile.open
+            int con;
+
+            //   while (ioctl(pip[0], FIONREAD, &con) == 0 && con > 0)
+            while ( (count = read(pip[0], c,100) ) > 0 )
+            {
+                //count = read(pip[0], c,1000) ;
+                write(scriptfile, c, count);
+                //   scriptfile.write(buff.c_str(), buff.size());
+                write(1,c,count);//    cout.write(buff.c_str(), buff.size());
+                //     cout << "count is " << count << endl;
+                //  count = write(scriptfile,buff.c_str(),count);
+
+            }
+            close(pip[0]);
+            _exit(0);
+
+        }
+        close(pip[0]);
+
+        //    cout << "k term";
+
+    }
+    else
+    {
+        close(pip[1]);
+        close(pip[0]);
+        int * status;
+
+        //  cout << "ret term";
+    }
+
+    close(pip[1]);
+    close(pip[0]);
+//   waitpid(ret,NULL,0);
+
+}
+
 void run_pipes (char ** rargs, int tokcount, int pipes)
 {
 
