@@ -31,7 +31,8 @@ void set_alarm ( unsigned int secs)
 
         if (sleep( secs-1 ) == 0);
         while( time(NULL) != uptime) ;
-        cout << endl <<"ALARM ALARM ALARM" << endl;
+        time_t t = (time_t) time(NULL) - secs;
+        cout << endl <<"ALARM ALARM ALARM" << endl << "This alarm was set at: " << ctime(&t) << endl;
         _exit(0);
 
 

@@ -240,7 +240,7 @@ void read_missed_alarms()
 
             }
             else {
-                alarms.push_back( time(NULL) - altime ) ;
+                alarms.push_back(  altime ) ;
 
             }
 
@@ -250,7 +250,8 @@ void read_missed_alarms()
         alstream.close();
     }
     for( auto i = alarms.begin(); i != alarms.end() ; i++ ) {
-        set_alarm(*i);
+
+        set_alarm(*i - time(NULL));
     }
 
 }
