@@ -8,10 +8,12 @@
 #include <stdio.h>
 #include <sys/ioctl.h>
 #include <pwd.h>
+#include <stdlib.h>
+#include <time.h>
 #include "utility_functions.h"
 #include "run_commands.h"
 #include "setup_env.h"
-#include <stdlib.h>
+#include "alarm.h"
 #define MAXARGS 400
 #define MAX_ARG_LENGTH 100
 
@@ -29,11 +31,12 @@ map<string,string> filemapping;
 
 int main(int argc, char *argv[], char *envp[])
 {
-    setup_environ();
 
+    setup_environ();
     string input = "";
     map<string,string> fm = filemapping;
     map<string,string> alias;
+
 
     while(input != "exit")
     {
@@ -272,6 +275,11 @@ int main(int argc, char *argv[], char *envp[])
                 run_command_bg(rargs, tokcount);
 
 
+            }
+            else if (strcmp(rargs[0],"remindme") == 0)
+            {
+                unsigned int secs = atoi(rargs[1]);
+                set_alarm( secs);
             }
             else if (rediri ==1 && pipes > 0)
             {

@@ -7,12 +7,14 @@ extern map<string,pair<string,bool>> vars;
 extern map<string,string> filemapping;
 void import_env_var();
 void export_var (char*, char* );
-
+void set_alarm ( unsigned int );
+void read_missed_alarms();
 
 void setup_environ ()
 {
 
- //   environ = NULL;
+
+//   environ = NULL;
     struct passwd * thispwd = getpwuid(getuid());
     string  ttt (thispwd->pw_dir);
     home = ttt;
@@ -112,7 +114,7 @@ void setup_environ ()
     }
 
     import_env_var();
-
+    read_missed_alarms();
     return;
 }
 
@@ -219,6 +221,37 @@ void export_var (char* rarg0, char* rarg2)
 }
 
 
+void read_missed_alarms()
+{
+
+    string alfile = ".alarm";
+    fstream alstream (alfile);
+    string line;
+    vector <unsigned int> alarms;
+    if(alstream.is_open())
+    {
+        while(getline(alstream, line))
+        {
+            unsigned int altime = stoi(line);
+            if(time(NULL) >= altime) {
+                time_t t = (time_t) altime;
+                cout << "You had missed an alarm that was supposed to occur on " << ctime(&t) << endl;
 
 
+            }
+            else {
+                alarms.push_back( time(NULL) - altime ) ;
+
+            }
+
+        }
+        alstream.close();
+        alstream.open(".alarm", std::ofstream::out | std::ofstream::trunc);
+        alstream.close();
+    }
+    for( auto i = alarms.begin(); i != alarms.end() ; i++ ) {
+        set_alarm(*i);
+    }
+
+}
 #endif // SETUP_ENV_H_INCLUDED
