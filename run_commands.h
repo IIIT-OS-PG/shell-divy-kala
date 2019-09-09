@@ -56,11 +56,12 @@ void run_redirect ( char ** rargs, int tokcount)
     }
     else
     {
-        int * status = NULL;
-        waitpid(ret, status, 0);
-         if(status != NULL && *status != 0) {
+      int status;
+        waitpid(ret,&status,0);
 
-            dolques = WEXITSTATUS(*status);
+        if(status != 0) {
+
+            dolques = WEXITSTATUS(status);
         }
         else {
             dolques = 0;
@@ -114,16 +115,16 @@ void run_double_redirect ( char ** rargs, int tokcount)
     }
     else
     {
-        int * status = NULL;
-        waitpid(ret, status, 0);
-         if(status != NULL && *status != 0) {
+      int status;
+        waitpid(ret,&status,0);
 
-            dolques = WEXITSTATUS(*status);
+        if(status != 0) {
+
+            dolques = WEXITSTATUS(status);
         }
         else {
             dolques = 0;
         }
-
 
     }
 
@@ -206,7 +207,7 @@ void run_command(char ** trueargs, int tokcount)
 
         }
         close(pip[0]);
-        waitpid(ret,NULL,0);
+
         waitpid(k,NULL,0);
         //    cout << "k term";
 
@@ -215,20 +216,20 @@ void run_command(char ** trueargs, int tokcount)
     {
         close(pip[1]);
         close(pip[0]);
-        int * status = NULL;
-        waitpid(ret,status,0);
 
-        if(stats != NULL && *status != 0) {
 
-            dolques = WEXITSTATUS(*status);
+        //  cout << "ret term";
+    }
+     int status;
+        waitpid(ret,&status,0);
+
+        if(status != 0) {
+
+            dolques = WEXITSTATUS(status);
         }
         else {
             dolques = 0;
         }
-
-        //  cout << "ret term";
-    }
-
     close(pip[1]);
     close(pip[0]);
 //   waitpid(ret,NULL,0);
@@ -483,13 +484,12 @@ void run_pipes (char ** rargs, int tokcount, int pipes)
 //        if(i==child_pids.back) {
 //            kill(*i, 0);
 //        }
-        int * status = NULL;
+       int status;
+        waitpid(*i,&status,0);
 
-        waitpid(*i,status,0);
+        if(status != 0) {
 
-        if( status != NULL && *status != 0) {
-
-            dolques = WEXITSTATUS(*status);
+            dolques = WEXITSTATUS(status);
         }
         else {
             dolques = 0;
@@ -621,11 +621,12 @@ void redirect_from_pipe (char ** rargs, int tokcount, int pipes)
 //        if(i==child_pids.back) {
 //            kill(*i, 0);
 //        }
-        int * status = NULL;
-        waitpid(*i,status,0);
-           if(status != NULL && *status != 0) {
+        int status;
+        waitpid(*i,&status,0);
 
-            dolques = WEXITSTATUS(*status);
+        if(status != 0) {
+
+            dolques = WEXITSTATUS(status);
         }
         else {
             dolques = 0;
@@ -756,16 +757,16 @@ void dredirect_from_pipe (char ** rargs, int tokcount, int pipes)
 //        if(i==child_pids.back) {
 //            kill(*i, 0);
 //        }
-        int * status = NULL;
-        waitpid(*i,status,0);
-           if(status != NULL && *status != 0) {
+       int status;
+        waitpid(*i,&status,0);
 
-            dolques = WEXITSTATUS(*status);
+        if(status != 0) {
+
+            dolques = WEXITSTATUS(status);
         }
         else {
             dolques = 0;
         }
-
     }
 
 

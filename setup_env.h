@@ -52,6 +52,9 @@ void setup_environ ()
     ps1 = "#";
     if(user)
         ps1 = "$";
+    char * pss = new char [ps1.size()+4];
+    strcpy(pss,("PS1="+ps1).c_str());
+    putenv(pss);
 
 
     string env_path = "shell_environ";

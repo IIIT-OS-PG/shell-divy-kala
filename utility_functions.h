@@ -20,7 +20,9 @@ void prompt()
 //    getcwd(buff, 4096);
 //    cwd = getcwd(buff,4096);
     //cout << endl;
+
     cout  << ps1 << flush;
+
     if(record)
     {
         int buffsiz = ps1.size();
