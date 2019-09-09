@@ -4,9 +4,9 @@
 extern string cwd, ps1, user_name, home, host_name;
 extern string path; //NOTE THAT PATH IS EXPECTED TO END WITH /
 extern map<string,pair<string,bool>> vars;
-
+extern map<string,string> filemapping;
 void import_env_var();
-void export_var (char* , char* );
+void export_var (char*, char* );
 
 
 void setup_environ ()
@@ -57,23 +57,57 @@ void setup_environ ()
     string line;
     if(shellrc.is_open())
     {
-        while(getline(shellrc, line, '='))
+        while(getline(shellrc, line))
         {
+            if(line == "\n" || line == "")
+                continue;
 
-            if(line == "PATH" )
+            stringstream ss (line);
+            string tok;
+            getline (ss,tok, '=');
+            string key = tok;
+            if(tok[0] == '.')
             {
 
-                getline(shellrc,line);
-                line = line.substr(1,line.size()-2);
-                path = line;
-                char* envpath = new char [line.size()+5];
-                strcpy(envpath,("PATH="+line).c_str());
-                putenv(envpath);
+
+                getline(ss,tok);
+                string value = tok;
+                filemapping[key] = value;
 
             }
+            else
+            {
+
+                getline(ss,tok);
+
+                string val = tok;
+                char* envpath = new char [line.size()];
+                strcpy(envpath,(line).c_str());
+                putenv(envpath);
+                vars[key] = make_pair(val,true);
+
+            }
+
+
+
+            /*    else if (line == "[mapping]" ) {
+
+                    while( getline(shellrc, line) && line != "[/mapping]") {
+                        getline (ss,tok, '=');
+                        string key = tok;
+                        getline(shellrc,tok);
+                        string value = tok;
+                        filemapping[key] = value;
+                        cout << key << " " << value << endl;
+
+                    }
+
+
+                }*/
         }
     }
-    else {
+    else
+    {
         cout << endl << "could not open shell_environ, is it in the current directory?";
     }
 
@@ -83,10 +117,12 @@ void setup_environ ()
 }
 
 
-void import_env_var() {
+void import_env_var()
+{
+
     vars["HOME"] = make_pair(home,true);
     vars["USER"] = make_pair(user_name,true);
-    vars["PATH"] = make_pair(path,true);
+//   vars["PATH"] = make_pair(path,true);
     vars["HOST"] = make_pair(host_name,true);
     vars["PS1"] = make_pair(ps1,true);
 
@@ -122,9 +158,6 @@ void import_env_var() {
 }
 
 
-
-
-
 void export_var (char* rarg0, char* rarg2)
 {
     char * cvars = getenv("VARS");
@@ -136,13 +169,13 @@ void export_var (char* rarg0, char* rarg2)
         strcpy ( pass, ("VARS="+k+"="+v+";").c_str());
         putenv(pass);
         char * tmp =   getenv("VARS");
-     //   cout << endl << "reading from new environ " <<tmp << endl;
+        //   cout << endl << "reading from new environ " <<tmp << endl;
 
 
     }
     else
     {
-       // cout << "inside else cvars " << cvars << endl;
+        // cout << "inside else cvars " << cvars << endl;
         string svars (cvars);
         stringstream vstream (svars);
         string token;
@@ -170,15 +203,16 @@ void export_var (char* rarg0, char* rarg2)
             }
         }
 
-        if(!replaced) {
-             string temp = k+"="+v+";";
-             newvars = newvars + temp;
+        if(!replaced)
+        {
+            string temp = k+"="+v+";";
+            newvars = newvars + temp;
         }
         char * cnewvars = new char [newvars.size()];
         strcpy(cnewvars, newvars.c_str());
 
         putenv(cnewvars);
-      //  cout << endl << "modified vars : "<< cnewvars << endl;
+        //  cout << endl << "modified vars : "<< cnewvars << endl;
 
     }
 

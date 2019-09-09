@@ -24,6 +24,7 @@ map<string,pair<string,bool>> vars;
 int scriptfile;
 int dolques;
 bool record = false;
+map<string,string> filemapping;
 
 
 int main(int argc, char *argv[], char *envp[])
@@ -31,12 +32,8 @@ int main(int argc, char *argv[], char *envp[])
     setup_environ();
 
     string input = "";
-
+    map<string,string> fm = filemapping;
     map<string,string> alias;
-
-
-
-
 
     while(input != "exit")
     {
@@ -44,11 +41,6 @@ int main(int argc, char *argv[], char *envp[])
         prompt();
 
         getline(cin, input);
-
-
-
-
-
 
         char * tokens[MAXARGS];
         int tokcount = tokenize_string(input, tokens);
@@ -201,8 +193,6 @@ int main(int argc, char *argv[], char *envp[])
                     }
 
                 }
-
-
 
             }
 
