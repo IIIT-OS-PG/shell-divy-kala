@@ -103,6 +103,8 @@ int main(int argc, char *argv[], char *envp[])
                 else if (strcmp(rargs[i], "$$") == 0)
                 {
 
+
+
                     int pid = getpid();
                     string x = to_string(pid);
                     char * temp = new char [x.size()];
