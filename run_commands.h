@@ -56,9 +56,9 @@ void run_redirect ( char ** rargs, int tokcount)
     }
     else
     {
-        int * status;
+        int * status = NULL;
         waitpid(ret, status, 0);
-         if(*status != 0) {
+         if(status != NULL && *status != 0) {
 
             dolques = WEXITSTATUS(*status);
         }
@@ -114,9 +114,9 @@ void run_double_redirect ( char ** rargs, int tokcount)
     }
     else
     {
-        int * status;
+        int * status = NULL;
         waitpid(ret, status, 0);
-         if(*status != 0) {
+         if(status != NULL && *status != 0) {
 
             dolques = WEXITSTATUS(*status);
         }
@@ -215,10 +215,10 @@ void run_command(char ** trueargs, int tokcount)
     {
         close(pip[1]);
         close(pip[0]);
-        int * status;
+        int * status = NULL;
         waitpid(ret,status,0);
 
-        if(*status != 0) {
+        if(stats != NULL && *status != 0) {
 
             dolques = WEXITSTATUS(*status);
         }
@@ -483,10 +483,11 @@ void run_pipes (char ** rargs, int tokcount, int pipes)
 //        if(i==child_pids.back) {
 //            kill(*i, 0);
 //        }
-        int * status;
+        int * status = NULL;
 
         waitpid(*i,status,0);
-           if(*status != 0) {
+
+        if( status != NULL && *status != 0) {
 
             dolques = WEXITSTATUS(*status);
         }
@@ -620,9 +621,9 @@ void redirect_from_pipe (char ** rargs, int tokcount, int pipes)
 //        if(i==child_pids.back) {
 //            kill(*i, 0);
 //        }
-        int * status;
+        int * status = NULL;
         waitpid(*i,status,0);
-           if(*status != 0) {
+           if(status != NULL && *status != 0) {
 
             dolques = WEXITSTATUS(*status);
         }
@@ -755,9 +756,9 @@ void dredirect_from_pipe (char ** rargs, int tokcount, int pipes)
 //        if(i==child_pids.back) {
 //            kill(*i, 0);
 //        }
-        int * status;
+        int * status = NULL;
         waitpid(*i,status,0);
-           if(*status != 0) {
+           if(status != NULL && *status != 0) {
 
             dolques = WEXITSTATUS(*status);
         }
